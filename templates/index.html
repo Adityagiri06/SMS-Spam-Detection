@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SMS Spam Detector</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header>
+            <h1>📱 SMS Spam Detector</h1>
+            <p class="subtitle">Intelligent spam detection powered by Machine Learning</p>
+        </header>
+
+        <!-- Main Content -->
+        <main>
+            <!-- Description -->
+            <section class="description">
+                <p>Enter an SMS message below to check if it's spam or legitimate (ham).</p>
+                <p class="small-text">Uses TF-IDF and Naive Bayes for real-time classification.</p>
+            </section>
+
+            <!-- Input Section -->
+            <section class="input-section">
+                <label for="message-input">Your Message:</label>
+                <textarea 
+                    id="message-input" 
+                    placeholder="Paste or type an SMS message here..." 
+                    rows="6"
+                    maxlength="1000"
+                ></textarea>
+                <div class="char-count">
+                    <span id="char-count">0</span>/1000
+                </div>
+                <button id="check-btn" class="btn btn-primary">Check Message</button>
+            </section>
+
+            <!-- Result Section -->
+            <section id="result-section" class="result-section hidden">
+                <div id="result-content">
+                    <!-- Result will be inserted here by JavaScript -->
+                </div>
+            </section>
+
+            <!-- Error Section -->
+            <section id="error-section" class="error-section hidden">
+                <p id="error-message"></p>
+            </section>
+
+            <!-- Loading Spinner -->
+            <div id="loading" class="loading hidden">
+                <div class="spinner"></div>
+                <p>Analyzing message...</p>
+            </div>
+        </main>
+
+        <!-- Footer -->
+        <footer>
+            <p>Built with Python, Flask, and Machine Learning</p>
+        </footer>
+    </div>
+
+    <script>
+        // DOM Elements
+        const messageInput = document.getElementById('message-input');
+        const checkBtn = document.getElementById('check-btn');
+        const resultSection = document.getElementById('result-section');
+        const resultContent = document.getElementById('result-content');
+        const errorSection = document.getElementById('error-section');
+        const errorMessage = document.getElementById('error-message');
+        const loadingSpinner = document.getElementById('loading');
+        const charCount = document.getElementById('char-count');
+
+        // Update character count
+        messageInput.addEventListener('input', function() {
+            charCount.textContent = this.value.length;
+        });
+
+        // Handle prediction
+        checkBtn.addEventListener('click', async function() {
+            const message = messageInput.value.trim();
+
+            // Clear previous results
+            resultSection.classList.add('hidden');
+            errorSection.classList.add('hidden');
+
+            // Validate input
+            if (!message) {
+                showError('Please enter a message to check.');
+                return;
+            }
+
+            // Show loading
+            loadingSpinner.classList.remove('hidden');
+            checkBtn.disabled = true;
+
+            try {
+                // Send request to server
+                const response = await fetch('/predict', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ message: message })
+                });
+
+                const data = await response.json();
+
+                // Hide loading
+                loadingSpinner.classList.add('hidden');
+
+                if (response.ok) {
+                    displayResult(data);
+                } else {
+                    showError(data.error || 'An error occurred.');
+                }
+            } catch (error) {
+                loadingSpinner.classList.add('hidden');
+                showError('Failed to connect to server. Make sure it\'s running.');
+                console.error('Fetch error:', error);
+            } finally {
+                checkBtn.disabled = false;
+            }
+        });
+
+        // Display prediction result
+        function displayResult(data) {
+            const prediction = data.prediction;
+            const message = data.message;
+            const confidence = data.confidence;
+
+            let resultHTML = `
+                <div class="result-box result-${prediction.toLowerCase()}">
+                    <h2>Prediction Result</h2>
+                    <p class="prediction-label">${prediction}</p>
+                    <p class="prediction-message">${message}</p>
+                    <p class="confidence">Confidence: ${confidence}</p>
+                </div>
+            `;
+
+            resultContent.innerHTML = resultHTML;
+            resultSection.classList.remove('hidden');
+
+            // Scroll to result
+            resultSection.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+
+        // Display error message
+        function showError(message) {
+            errorMessage.textContent = message;
+            errorSection.classList.remove('hidden');
+
+            // Scroll to error
+            errorSection.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+
+        // Allow Enter key for submission (Ctrl+Enter or Cmd+Enter)
+        messageInput.addEventListener('keydown', function(event) {
+            if ((event.ctrlKey || event.metaKey) && event.key === 'Enter') {
+                checkBtn.click();
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,67 @@
+# Python cache and bytecode
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# Virtual environments
+venv/
+.venv/
+env/
+ENV/
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# IDE and editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+
+# Dataset (large files)
+data/*.zip
+data/SMSSpamCollection
+
+# Jupyter Notebook
+.ipynb_checkpoints/
+*.ipynb
+
+# Flask
+instance/
+.webassets-cache
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Miscellaneous
+*.log
+*.pid
+.project
+.pydevproject
+.settings/
+
+# OS specific
+Thumbs.db
+.DS_Store
